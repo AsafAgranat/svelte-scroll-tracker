@@ -1,6 +1,7 @@
+
 {
 	"name": "svelte-scroll-tracker",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A lightweight, dependency-free Svelte 5 component for tracking scroll progress of an element within the viewport.",
 	"author": "Asaf Agranat",
 	"license": "MIT",
@@ -20,7 +21,15 @@
 		"tracker",
 		"component"
 	],
-	"peerDependencies": {
-		"svelte": "^5.0.0"
-	}
+  "peerDependencies": {
+	"svelte": "^5.0.0"
+  },
+  "repository": {
+	"type": "git",
+	"url": "https://github.com/AsafAgranat/svelte-scroll-tracker.git"
+  },
+  "homepage": "https://github.com/AsafAgranat/svelte-scroll-tracker#readme",
+  "bugs": {
+	"url": "https://github.com/AsafAgranat/svelte-scroll-tracker/issues"
+  }
 }
