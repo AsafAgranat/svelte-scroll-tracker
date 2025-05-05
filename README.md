@@ -50,4 +50,3 @@ npm install svelte-scroll-tracker
 | startThreshold  | number  | 0       | When to start mapping progress (0-1)             |
 | endThreshold    | number  | 0.5     | When to end mapping progress (0-1)               |
 | debug           | boolean | false   | Enable debug logging                             |
-"
