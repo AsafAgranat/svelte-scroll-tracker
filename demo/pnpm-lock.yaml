@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      svelte-scroll-tracker:
+        specifier: ^1.0.6
+        version: 1.0.6(svelte@5.28.2)
     devDependencies:
       '@eslint/compat':
         specifier: ^1.2.5
@@ -1459,6 +1463,11 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-scroll-tracker@1.0.6:
+    resolution: {integrity: sha512-1EADZF2hpq14idM96oF2WoIeVItt+ZOUyClQjr41Dw5GSbFft9/RmKXhdRVhRD5VG/5kZtkVj19dRyIwilArPQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte@5.28.2:
     resolution: {integrity: sha512-FbWBxgWOpQfhKvoGJv/TFwzqb4EhJbwCD17dB0tEpQiw1XyUEKZJtgm4nA4xq3LLsMo7hu5UY/BOFmroAxKTMg==}
@@ -2990,6 +2999,10 @@ snapshots:
       postcss-scss: 4.0.9(postcss@8.5.3)
       postcss-selector-parser: 7.1.0
     optionalDependencies:
+      svelte: 5.28.2
+
+  svelte-scroll-tracker@1.0.6(svelte@5.28.2):
+    dependencies:
       svelte: 5.28.2
 
   svelte@5.28.2:

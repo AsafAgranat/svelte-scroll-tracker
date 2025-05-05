@@ -36,5 +36,8 @@
 		"onlyBuiltDependencies": [
 			"esbuild"
 		]
+	},
+	"dependencies": {
+		"svelte-scroll-tracker": "^1.0.6"
 	}
 }
