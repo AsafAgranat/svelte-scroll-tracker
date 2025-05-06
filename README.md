@@ -20,7 +20,10 @@ This component is intentionally barebones: it generates only a single CSS progre
 npm install svelte-scroll-tracker
 ```
 
+
 ## Usage
+
+### CSS Variable Usage
 
 ```svelte
 <script lang="ts">
@@ -42,6 +45,21 @@ npm install svelte-scroll-tracker
 - The component sets a CSS custom property `--scroll-progress` (from 0 to 1) on its root element as you scroll.
 - You can customize `startThreshold`, `endThreshold`, and `debug` via props.
 - No external dependencies; works out of the box with Svelte 5.
+
+### Programmatic Usage
+
+You can also use the `progress` value programmatically via the `children` snippet slot:
+
+```svelte
+<ScrollTracker>
+  {#snippet children(progress)}
+    static content
+    {#if progress > 0.5}
+      dynamic content
+    {/if}
+  {/snippet}
+</ScrollTracker>
+```
 
 ## Props
 

@@ -1,7 +1,7 @@
 
 {
 	"name": "svelte-scroll-tracker",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"description": "A lightweight, dependency-free Svelte 5 component for tracking scroll progress of an element within the viewport.",
 	"author": "Asaf Agranat",
 	"license": "MIT",
