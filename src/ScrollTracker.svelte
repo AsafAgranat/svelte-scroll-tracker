@@ -1,145 +1,221 @@
 <script lang="ts">
-	import { browser } from '$app/environment';		
+	import { browser } from '$app/environment';
 	import type { Snippet } from 'svelte';
 
 	// --- Define Props Interface ---
 	interface Props {
-		children: Snippet;
+		/** The content snippet that will receive the scroll progress */
+		children: Snippet<[progress: number]>; // Snippet accepts a 'progress' number
 		/** Start mapping progress when raw progress > this value (0-1) */
 		startThreshold?: number;
 		/** Finish mapping progress when raw progress reaches this value (0-1) */
 		endThreshold?: number;
+		/** Enable console logging for debug purposes */
 		debug?: boolean;
+		id?: string;
 	}
+
+	// --- Internal State for Progress ---
+	let internalProgress = $state(0);
 
 	// --- Props ---
 	let {
 		children,
 		startThreshold = 0, // Default: start immediately
-		endThreshold = 0.5,   // Default: end when fully scrolled past
-		debug = false
+		endThreshold = 0.5, // Default: end when element's top reaches halfway through viewport
+		debug = false,
+		id
 	}: Props = $props();
 
 	// --- State & Refs ---
-	let element: HTMLDivElement | null = null;
-	let isIntersecting = $state(false);
-	let rafId: number | null = null;
+	let element: HTMLDivElement | null = null; // Bound to the wrapping div
+	let isIntersecting = $state(false); // Is the element currently in the viewport?
+	let rafId: number | null = null; // ID for requestAnimationFrame to throttle scroll events
 
 	// --- Intersection Observer Effect ---
+	// Manages whether the scroll listener is active and handles edge cases for entering/leaving viewport
 	$effect(() => {
 		if (!browser || !element) return;
-		// Initialize CSS var - reflects clamped start state
-		const initialProgress = Math.max(0, Math.min(1, (0 - startThreshold) / (endThreshold - startThreshold) || 0));
-		element.style.setProperty('--scroll-progress', String(initialProgress));
+
+		// Initialize CSS var and internal state with the calculated progress as if scrolled to top (0)
+		const initialRawProgress =
+			(window.innerHeight - 0) / (window.innerHeight + (element.offsetHeight || 0)); // Approximate raw progress at top
+		let initialMappedProgress = 0;
+		const rangeStartInitial = startThreshold;
+		const rangeEndInitial = endThreshold;
+		const rangeLengthInitial = rangeEndInitial - rangeStartInitial;
+
+		if (rangeLengthInitial > 0) {
+			initialMappedProgress = (initialRawProgress - rangeStartInitial) / rangeLengthInitial;
+		} else {
+			initialMappedProgress = initialRawProgress >= rangeStartInitial ? 1 : 0;
+		}
+		initialMappedProgress = Math.max(0, Math.min(1, initialMappedProgress));
+
+		element.style.setProperty('--scroll-progress', String(initialMappedProgress));
+		internalProgress = initialMappedProgress;
 
 		const observer = new IntersectionObserver(
 			([entry]: IntersectionObserverEntry[]) => {
-				isIntersecting = entry.isIntersecting;
-				if (debug) console.log('Intersection Changed:', entry.isIntersecting);
+				const currentlyIntersecting = entry.isIntersecting;
+				if (debug && isIntersecting !== currentlyIntersecting) {
+					// Log only on change
+					console.log(
+						`Intersection Changed (Element ${element?.id || 'N/A'}):`,
+						currentlyIntersecting,
+						entry.boundingClientRect
+					);
+				}
+				isIntersecting = currentlyIntersecting;
 
-				if (!entry.isIntersecting) {
+				if (!isIntersecting) {
+					// Element has left the viewport
 					if (rafId) {
 						cancelAnimationFrame(rafId);
 						rafId = null;
 					}
-					// Determine final progress based on exit position & thresholds
-					const vh = window.innerHeight; // Need viewport height for raw calc
-					const rect = entry.boundingClientRect;
+					// Determine final progress based on exit position relative to thresholds
+					const vh = window.innerHeight;
+					const rect = entry.boundingClientRect; // Get the *final* rect before it's gone
 					const elHeight = rect.height;
-                    const rawProgress = (vh - rect.top) / (vh + elHeight);
-                    // Use the same mapping logic to determine final state (0 or 1)
-                    const rangeStart = startThreshold;
-                    const rangeEnd = endThreshold;
-                    const rangeLength = rangeEnd - rangeStart;
-                    let finalProgress = 0;
-                    if (rangeLength > 0) {
-                        finalProgress = (rawProgress - rangeStart) / rangeLength;
-                    } else {
-                        finalProgress = rawProgress >= rangeStart ? 1 : 0;
-                    }
-                    finalProgress = Math.max(0, Math.min(1, finalProgress));
 
-					const currentElement = element;
+					// Raw progress: 0 when element's top enters viewport bottom, 1 when element's bottom leaves viewport top
+					const rawProgressOnExit = (vh - rect.top) / (vh + elHeight || 1); // Avoid division by zero if elHeight is 0
+
+					const rangeStart = startThreshold;
+					const rangeEnd = endThreshold;
+					const rangeLength = rangeEnd - rangeStart;
+					let finalProgressValue = 0;
+
+					if (rangeLength > 0) {
+						finalProgressValue = (rawProgressOnExit - rangeStart) / rangeLength;
+					} else {
+						// If range is zero or negative, progress is binary based on startThreshold
+						finalProgressValue = rawProgressOnExit >= rangeStart ? 1 : 0;
+					}
+					finalProgressValue = Math.max(0, Math.min(1, finalProgressValue)); // Clamp to 0-1
+
+					const currentElementRef = element; // Capture ref for async update
 					requestAnimationFrame(() => {
-						if (currentElement) {
-							currentElement.style.setProperty('--scroll-progress', String(finalProgress));
+						// Ensure style is set even if raf was cancelled
+						if (currentElementRef) {
+							currentElementRef.style.setProperty('--scroll-progress', String(finalProgressValue));
 						}
-						if (debug) console.log(`Exited Viewport. Raw: ${rawProgress.toFixed(3)}, Final Progress: ${finalProgress}`);
+						internalProgress = finalProgressValue;
+						if (debug)
+							console.log(
+								`Exited Viewport (Element ${currentElementRef?.id || 'N/A'}). Raw: ${rawProgressOnExit.toFixed(3)}, Final Mapped: ${finalProgressValue.toFixed(3)}`
+							);
 					});
 				} else {
-					handleScroll(); // Initial calculation on entry
+					// Element has entered or is moving within the viewport
+					handleScroll(); // Perform initial calculation on entry or if already visible
 				}
 			},
-			{ threshold: 0.0 }
+			{ threshold: [0.0, 0.001, 0.999, 1.0] } // Multiple thresholds for more precise entry/exit
 		);
+
 		observer.observe(element);
+
 		return () => {
 			if (rafId) cancelAnimationFrame(rafId);
 			observer.disconnect();
+			if (debug) console.log(`Observer disconnected (Element ${element?.id || 'N/A'})`);
 		};
 	});
 
 	// --- Scroll Listener Effect ---
+	// Adds/removes the main scroll event listener based on viewport intersection
 	$effect(() => {
 		if (!browser) return;
+
 		if (isIntersecting) {
-			if (debug) console.log('Adding scroll listener');
+			if (debug) console.log(`Adding scroll listener (Element ${element?.id || 'N/A'})`);
 			window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
-			handleScroll(); // Initial calculation
+			handleScroll(); // Perform an initial calculation when becoming active
 			return () => {
-				if (debug) console.log('Removing scroll listener');
+				if (debug) console.log(`Removing scroll listener (Element ${element?.id || 'N/A'})`);
 				window.removeEventListener('scroll', handleScroll, { capture: true });
 				if (rafId) {
+					// Clean up any pending animation frame
 					cancelAnimationFrame(rafId);
 					rafId = null;
 				}
 			};
+		} else {
+			// Ensure rafId is cleared if we are no longer intersecting and listener is removed
+			if (rafId) {
+				cancelAnimationFrame(rafId);
+				rafId = null;
+			}
 		}
 	});
 
-	// --- Scroll Handler (Throttled) ---
+	// --- Scroll Handler (Throttled with requestAnimationFrame) ---
+	// Calculates and applies the scroll progress
 	function handleScroll(): void {
-		if (rafId) return;
+		if (!element || !isIntersecting) {
+			// Don't run if not visible or element is gone
+			if (rafId) {
+				// Clear pending frame if conditions are no longer met
+				cancelAnimationFrame(rafId);
+				rafId = null;
+			}
+			return;
+		}
+		if (rafId) return; // Already scheduled an update
+
 		rafId = requestAnimationFrame(() => {
-			if (!element) { rafId = null; return; }
+			if (!element || !isIntersecting) {
+				// Re-check in case state changed before raf executes
+				rafId = null;
+				return;
+			}
 
 			const vh: number = window.innerHeight;
 			const rect: DOMRect = element.getBoundingClientRect();
 			const elTop: number = rect.top;
 			const elHeight: number = rect.height;
 
-			if (elHeight === 0 && vh === 0) { rafId = null; return; }
+			// Avoid division by zero or non-sensical calculations if element has no height or viewport is zero
+			if (elHeight === 0 && vh === 0) {
+				rafId = null;
+				return;
+			}
 
-			// Raw progress (0 = top entering bottom, 1 = bottom leaving top)
-			const rawProgress: number = (vh - elTop) / (vh + elHeight);
+			// Raw progress: 0 when element's top enters viewport bottom, 1 when element's bottom leaves viewport top
+			const rawProgress: number = (vh - elTop) / (vh + elHeight || 1); // Avoid division by zero
 
-			// Define the active range based on props
+			// Define the active range for progress mapping based on props
 			const rangeStart = startThreshold;
 			const rangeEnd = endThreshold;
 			const rangeLength = rangeEnd - rangeStart;
 
-			let currentProgress: number = 0;
+			let currentMappedProgress: number = 0;
 			if (rangeLength > 0) {
-				// Map rawProgress within the active range [rangeStart, rangeEnd] to 0-1 output
-				currentProgress = (rawProgress - rangeStart) / rangeLength;
+				// Map rawProgress within the active range [rangeStart, rangeEnd] to an output of 0-1
+				currentMappedProgress = (rawProgress - rangeStart) / rangeLength;
 			} else {
-                // Handle edge case: range is zero or negative
-                currentProgress = rawProgress >= rangeStart ? 1 : 0;
-            }
+				// Handle edge case: if range is zero or negative, progress is binary
+				currentMappedProgress = rawProgress >= rangeStart ? 1 : 0;
+			}
 
-			// Clamp final progress to ensure it stays within 0-1 boundaries
-			currentProgress = Math.max(0, Math.min(1, currentProgress));
+			// Clamp final progress to ensure it always stays within 0-1 boundaries
+			currentMappedProgress = Math.max(0, Math.min(1, currentMappedProgress));
 
-			element.style.setProperty('--scroll-progress', String(currentProgress));
+			element.style.setProperty('--scroll-progress', String(currentMappedProgress));
+			internalProgress = currentMappedProgress; // Update the internal state
 
 			if (debug) {
-				console.log(`Scroll Update: Raw=${rawProgress.toFixed(3)}, Mapped=${currentProgress.toFixed(3)} (Range ${rangeStart}-${rangeEnd})`);
+				console.log(
+					`Scroll Update (Element ${element?.id || 'N/A'}): Raw=${rawProgress.toFixed(3)}, Mapped=${currentMappedProgress.toFixed(3)} (Range ${rangeStart}-${rangeEnd})`
+				);
 			}
-			rafId = null;
+			rafId = null; // Clear ID for next frame
 		});
 	}
 </script>
 
-<div bind:this={element}>
-	{@render children?.()}
+<div bind:this={element} {id}>
+	{@render children(internalProgress)}
 </div>

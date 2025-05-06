@@ -28,7 +28,7 @@
 	"type": "git",
 	"url": "https://github.com/AsafAgranat/svelte-scroll-tracker.git"
   },
-  "homepage": "https://github.com/AsafAgranat/svelte-scroll-tracker#readme",
+  "homepage": "https://svelte-scroll-tracker.vercel.app",
   "bugs": {
 	"url": "https://github.com/AsafAgranat/svelte-scroll-tracker/issues"
   }
