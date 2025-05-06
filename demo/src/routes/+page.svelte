@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { scale } from 'svelte/transition';
-
-	// import ScrollTracker from 'svelte-scroll-tracker';
+	import { generateAndApplyDuotoneColors } from '../lib/duotone';
+	import EmojiConfetti from '../lib/EmojiConfetti.svelte';
 	import ScrollTracker from '../../../src/ScrollTracker.svelte';
-	import { elasticOut } from 'svelte/easing';
-	import EmojiConfetti from '$lib/EmojiConfetti.svelte';
+	import { onMount } from 'svelte';
 
 	/* Optional: For dynamic content examples */
 	const revealText =
@@ -13,6 +11,11 @@
 	const imgSrc =
 		'https://plus.unsplash.com/premium_photo-1670590820797-51389452a3c3?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 	let currentScrollProgress = $state(0);
+
+	onMount(() => {
+		// Source: [207, 208, 209]
+		generateAndApplyDuotoneColors();
+	});
 </script>
 
 <svelte:head>
@@ -20,14 +23,14 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 	<link
-		href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Source+Code+Pro&display=swap"
+		href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
 		rel="stylesheet"
 	/>
 </svelte:head>
 
 <main class="page-content">
 	<header class="intro-header">
-		<h1><code>ScrollTracker</code> Demo</h1>
+		<h1>Svelte Scroll Tracker Demo</h1>
 		<p>A Svelte component driving animations based on scroll progress across the viewport.</p>
 		<nav>
 			<a
@@ -51,7 +54,7 @@
 	</div>
 
 	<section class="demo-section">
-		<h2>Example 1: Fade & Slide Up</h2>
+		<h2>Example: Fade & Slide Up</h2>
 		<div class="effect-label">0-50% Journey (default)</div>
 		<ScrollTracker>
 			<article class="content-box animate-fade-slide">
@@ -65,7 +68,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 2: Scale In & Translate Up</h2>
+		<h2>Example: Scale In & Translate Up</h2>
 		<div class="effect-label">0-40% Journey</div>
 		<ScrollTracker startThreshold={0} endThreshold={0.4}>
 			<article class="content-box animate-scale">
@@ -79,7 +82,18 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 3: Color Change</h2>
+		<h2>Example: fly in from the side</h2>
+		<div class="effect-label">0-50% Journey (default)</div>
+		<ScrollTracker startThreshold={0} endThreshold={0.5}>
+			<article class="content-box animate-fly-in-from-side">
+				<h3>Smooth Side Entrance</h3>
+				<p>A horizontal slide</p>
+			</article>
+		</ScrollTracker>
+	</section>
+
+	<section class="demo-section">
+		<h2>Example: Color Change</h2>
 		<div class="effect-label">30%-70% Journey</div>
 		<ScrollTracker startThreshold={0.3} endThreshold={0.7}>
 			<article class="content-box animate-color">
@@ -93,7 +107,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 4: Horizontal Reveal</h2>
+		<h2>Example: Horizontal Reveal</h2>
 		<div class="effect-label">10%-60% Journey</div>
 		<ScrollTracker startThreshold={0.1} endThreshold={0.6}>
 			<article class="content-box animate-reveal">
@@ -105,7 +119,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 5: Width Expansion</h2>
+		<h2>Example: Width Expansion</h2>
 		<div class="effect-label">0-50% Journey (default)</div>
 		<ScrollTracker>
 			<article class="content-box animate-width">
@@ -116,7 +130,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 6: SVG Draw</h2>
+		<h2>Example: SVG Draw</h2>
 		<div class="effect-label">10%-90% Journey</div>
 		<ScrollTracker startThreshold={0.1} endThreshold={0.9}>
 			<article class="content-box animate-svg">
@@ -136,7 +150,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 7: Word Reveal</h2>
+		<h2>Example: Word Reveal</h2>
 		<span class="effect-label">Staggered, 0-50% Journey (default)</span>
 		<ScrollTracker>
 			<p class="content-box animate-word-reveal">
@@ -154,26 +168,24 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example 8: Use it programmatically</h2>
+		<h2>Example: Use it programmatically</h2>
 		<span class="effect-label">Trigger at 50% Journey</span>
 		<ScrollTracker startThreshold={0.2} endThreshold={0.8}>
 			{#snippet children(progress)}
 				<article class="content-box">
 					<div style="display: flex">
 						<h4>Progress: {(progress * 100).toFixed()}%</h4>
-						{#if progress > .5}
-						
-						<span style="flex-grow: 2"></span>
-						<h4>POOMOJIES!</h4>
+						{#if progress > 0.5}
+							<span style="flex-grow: 2"></span>
+							<h4>POOMOJIES!</h4>
 						{/if}
 					</div>
 
 					<div>
-					<!-- {#if  progress > 0} -->
-						<EmojiConfetti trigger={ progress > .5 } />
-					<!-- {/if} -->
+						<!-- {#if  progress > 0} -->
+						<EmojiConfetti trigger={progress > 0.5} />
+						<!-- {/if} -->
 					</div>
-
 				</article>
 			{/snippet}
 		</ScrollTracker>
@@ -187,14 +199,15 @@
 <style lang="scss">
 	/* --- Variables --- */
 	:root {
-		--font-body: 'Poppins', sans-serif;
-		--font-heading: 'Poppins', sans-serif;
+		--font-body: 'IBM Plex Sans', sans-serif;
+		--font-heading: 'IBM Plex Sans', sans-serif;
 		--font-code: 'Source Code Pro', monospace;
-		--color-text: #333;
-		--color-primary: #673ab7; /* Deep Purple */
-		--color-accent: #ff4081; /* Pink accent */
-		--color-bg: #f4f6f8;
-		--color-box-bg: white;
+		--color-text: var(--duotone-secondary);
+		--color-primary: white; /* Deep Purple */
+		--color-accent: var(--duotone-secondary); /* Pink accent */
+		--color-bg: var(--duotone-primary);
+		--color-box-bg: var(--duotone-secondary);
+		--color-box-text: var(--duotone-primary);
 		--border-radius: 8px;
 		--box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 	}
@@ -202,14 +215,13 @@
 	:global(body) {
 		margin: 0;
 		font-family: var(--font-body);
-
 		background-color: var(--color-bg);
 		color: var(--color-text);
 		line-height: 1.7;
 
 		&:global(.dark) {
-			--color-text: #bbb;
-			--color-bg: #222;
+			--color-text: var(--duotone-secondary);
+			--color-bg: var(--duotone-primary);
 		}
 	}
 
@@ -231,16 +243,21 @@
 		margin-bottom: 10vh;
 		width: 90%;
 		max-width: 800px;
+			text-align: left;
+
 
 		h1 {
 			font-family: var(--font-heading);
-			font-weight: 600;
-			font-size: 2.8rem;
+			font-weight: 300;
+			font-size: clamp(3rem, 15vw ,8rem);
 			color: var(--color-primary);
 			margin-bottom: 0.5rem;
+			letter-spacing: -0.07em;
+			line-height: .8em;
 			code {
 				font-size: inherit; /* Make code same size in heading */
 				color: var(--color-accent);
+				font-family: inherit;
 			}
 		}
 
@@ -292,17 +309,31 @@
 	.demo-section {
 		margin-bottom: 40vh;
 		max-width: 100%;
+		width: 1000px;
 		padding: 5vw;
+		box-sizing: border-box;
+
+		h2 {
+			font-size: clamp(3rem, 12vw ,6rem);
+			line-height: .8em;
+			font-weight: 300;
+			margin-bottom: 2rem;
+			letter-spacing: -0.07em;
+		}
 	}
 
 	/* --- Content Box Styling --- */
 	.content-box {
-		color: var(--color-text);
+		font-size: 1.2rem;
+    line-height: 1.4em;
+	font-weight: 500;
+		box-sizing: border-box;
+		color: var(--color-box-text);
 		border: none; /* Remove border */
 		padding: 2.5rem;
 		background: var(--color-box-bg);
-		box-shadow: var(--box-shadow);
-		border-radius: var(--border-radius);
+		// box-shadow: var(--box-shadow);
+		// border-radius: var(--border-radius);
 		/* width: 85%; */
 		max-width: 700px;
 		text-align: left; /* Align text left for readability */
@@ -321,17 +352,20 @@
 		:global(.dark) & {
 			--color-box-bg: #111;
 		}
-		h2 {
+		h2, h3 {
 			font-family: var(--font-heading);
 			font-weight: 600;
 			margin-top: 0;
 			margin-bottom: 1rem;
-			color: var(--color-primary);
+			color: var(--duotone-primary);
 		}
 
 		p {
 			margin-bottom: 1.5rem;
-			font-size: 1rem;
+			// font-size: 1rem;
+			color: var(--duotone-primary);
+			
+
 			&:last-child {
 				margin-bottom: 0;
 			}
@@ -350,6 +384,7 @@
 			padding: 1rem;
 			border-radius: 4px;
 			overflow-x: auto;
+			color: var(--duotone-secondary);
 			code {
 				font-family: var(--font-code);
 				font-size: 0.9rem;
@@ -363,13 +398,14 @@
 		// top: -1px; /* Slight overlap */
 		// right: -1px;
 		margin-bottom: 2rem;
-		background-color: var(--color-accent);
-		color: white;
-		padding: 0.3rem 0.8rem;
-		font-size: 0.8rem;
-		font-weight: 600;
+		// background-color: var(--color-accent);
+		color: currentColor;
+		// padding: 0.3rem 0.8rem;
+		// font-size: 0.8rem;
+		font-weight: 800;
+		font-size: 1.5rem;
 		border-radius: var(--border-radius); /* Top-right, bottom-left */
-		font-family: var(--font-code);
+		font-family: var(--font-heading);
 	}
 
 	/* --- Animation Definitions --- */
@@ -382,6 +418,11 @@
 		/* Starts at translateY(50px) */
 		transform: translateY(calc(var(--offset-y) * (1 - var(--scroll-progress))));
 		will-change: opacity, transform;
+	}
+
+	* :global(.animate-fly-in-from-side) {
+		transform: translateX(calc((50% + 50vw) * (1 - var(--scroll-progress))));
+		will-change: transform;
 	}
 
 	* :global(.animate-scale) {
@@ -408,31 +449,31 @@
 			width: 100%;
 			height: 100%;
 			background-color: tomato;
-			z-index: -1;
+			z-index: 1;
 			background-image: linear-gradient(45deg, red, purple);
 			opacity: var(--scroll-progress);
+			    mix-blend-mode: exclusion;
 		}
 
-		:global(h2),
-		:global(p) {
-			color: var(--color-text);
-		} /* Ensure text stays readable */
+		// :global(h2),
+		// :global(p) {
+		// 	color: var(--color-text);
+		// } /* Ensure text stays readable */
 	}
 
 	* :global(.animate-reveal) {
 		opacity: 1; /* Keep content opaque */
 		transform: scale(1); /* No scaling */
-		/* Starts at inset(0 100% 0 0) (zero width) */
-		clip-path: inset(0 calc(100% - 100% * var(--scroll-progress)) 0 0);
+		clip-path: inset(-10% calc(110% - 120% * var(--scroll-progress)) -10% -20%);
 		will-change: clip-path;
-		background-color: var(--color-primary); /* Light purple background */
+		// background-color: var(--color-primary); /* Light purple background */
 	}
 
 	* :global(.animate-width) {
 		opacity: calc(var(--scroll-progress)); /* Starts at 0 */
 		transform: scale(1); /* No scaling needed */
 		/* Expand 20% -> 85% */ /* Starts at width: 20% */
-		width: calc(20% + 65% * var(--scroll-progress));
+		width: calc(100% * var(--scroll-progress));
 		max-width: 700px; /* Keep max-width constraint */
 		margin-left: auto; /* Keep centered */
 		margin-right: auto;
@@ -505,5 +546,8 @@
 				transform: scaleX(calc(1 - var(--delayed-progress)));
 			}
 		}
+	}
+	:global(.confetti-container) {
+		mix-blend-mode: plus-lighter;
 	}
 </style>
