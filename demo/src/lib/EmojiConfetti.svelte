@@ -47,7 +47,7 @@
 		setTimeout(() => {
 			const currentIds = new Set(newParticles.map((p) => p.id));
 			particles = particles.filter((p) => !currentIds.has(p.id));
-		}, 4600); // For 4.5s animation
+		}, 4600); 
 	}
 
 	export { fireConfetti };

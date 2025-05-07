@@ -1,20 +1,30 @@
 <script lang="ts">
+	// Demo page for svelte-scroll-tracker
+	// This file demonstrates various creative uses of the ScrollTracker component.
+
 	import { generateAndApplyDuotoneColors } from '../lib/duotone';
 	import EmojiConfetti from '../lib/EmojiConfetti.svelte';
-	import ScrollTracker from '../../../src/ScrollTracker.svelte';
+	import ScrollTracker from '../../../src/ScrollTracker.svelte'; // Adjusted path
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
-	/* Optional: For dynamic content examples */
-	const revealText =
+	/* Variables for dynamic content examples */
+	const revealText: string =
 		'Each word starts obscured by a block. As you scroll, the block covering each word shrinks away horizontally, revealing the text. This entire sequence completes as the paragraph reaches the middle of the viewport.';
-	const wordsAndSpaces = revealText.split(/(\s+)/);
-	const imgSrc =
+	const wordsAndSpaces: string[] = revealText.split(/(\s+)/); // Captures spaces for layout
+	const imgSrc: string =
 		'https://plus.unsplash.com/premium_photo-1670590820797-51389452a3c3?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-	let currentScrollProgress = $state(0);
+
+	// Controls the deferred mounting of the EmojiConfetti component.
+	let mountable: boolean = $state(false);
 
 	onMount(() => {
-		// Source: [207, 208, 209]
+		// Applies a visual theme for the demo page.
 		generateAndApplyDuotoneColors();
+		// Delays mounting the confetti component, e.g., for UX or performance.
+		setTimeout(() => {
+			mountable = true;
+		}, 2000);
 	});
 </script>
 
@@ -44,17 +54,17 @@
 				rel="noopener noreferrer">npm</a
 			>
 		</nav>
+
+		<div class="instructions">
+			<p>
+				Scroll down to see different <b>examples</b> powered by the <code>--scroll-progress</code> CSS
+				variable (0 to 1).
+			</p>
+		</div>
 	</header>
 
-	<div class="instructions">
-		<p>
-			Scroll down to see different effects powered by the <code>--scroll-progress</code> CSS variable
-			(0 to 1).
-		</p>
-	</div>
-
 	<section class="demo-section">
-		<h2>Example: Fade & Slide Up</h2>
+		<h2>Fade & Slide Up</h2>
 		<div class="effect-label">0-50% Journey (default)</div>
 		<ScrollTracker>
 			<article class="content-box animate-fade-slide">
@@ -68,7 +78,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: Scale In & Translate Up</h2>
+		<h2>Scale In & Translate Up</h2>
 		<div class="effect-label">0-40% Journey</div>
 		<ScrollTracker startThreshold={0} endThreshold={0.4}>
 			<article class="content-box animate-scale">
@@ -82,7 +92,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: fly in from the side</h2>
+		<h2>fly in from the side</h2>
 		<div class="effect-label">0-50% Journey (default)</div>
 		<ScrollTracker startThreshold={0} endThreshold={0.5}>
 			<article class="content-box animate-fly-in-from-side">
@@ -93,9 +103,9 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: Color Change</h2>
-		<div class="effect-label">30%-70% Journey</div>
-		<ScrollTracker startThreshold={0.3} endThreshold={0.7}>
+		<h2>Color Change</h2>
+		<div class="effect-label">30%-100% Journey</div>
+		<ScrollTracker startThreshold={0.3} endThreshold={1}>
 			<article class="content-box animate-color">
 				<h3>Mid-Scroll Shift</h3>
 				<p>
@@ -107,7 +117,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: Horizontal Reveal</h2>
+		<h2>Horizontal Reveal</h2>
 		<div class="effect-label">10%-60% Journey</div>
 		<ScrollTracker startThreshold={0.1} endThreshold={0.6}>
 			<article class="content-box animate-reveal">
@@ -119,7 +129,7 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: Width Expansion</h2>
+		<h2>Width Expansion</h2>
 		<div class="effect-label">0-50% Journey (default)</div>
 		<ScrollTracker>
 			<article class="content-box animate-width">
@@ -130,19 +140,49 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: SVG Draw</h2>
-		<div class="effect-label">10%-90% Journey</div>
-		<ScrollTracker startThreshold={0.1} endThreshold={0.9}>
+		<h2>SVG Draw</h2>
+		<div class="effect-label">10%-60% Journey</div>
+		<ScrollTracker startThreshold={0.3} endThreshold={0.8}>
 			<article class="content-box animate-svg">
-				if
 				<p>Animating SVG stroke properties.</p>
-				<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+				<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
 					<path
-						class="svg-path"
-						d="M 10 10 H 90 V 90 H 10 L 10 10"
+						d="M 25 88 
+       Q 50 100 75 88 
+       C 90 85, 98 70, 75 65 
+       C 85 55, 80 40, 65 35 
+       C 63 25, 58 15, 52 12 
+       C 40 15, 32 28, 35 40 
+       C 20 50, 10 60, 22 70 
+       C 12 75, 15 85, 25 88 Z"
+						stroke="saddlebrown"
+						stroke-width="5"
 						fill="none"
-						stroke="currentColor"
-						stroke-width="4"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						id="poop-body"
+					/>
+
+					<ellipse
+						cx="37"
+						cy="58"
+						rx="5"
+						ry="7"
+						stroke="saddlebrown"
+						stroke-width="2"
+						fill="none"
+						id="eye-left"
+					/>
+
+					<ellipse
+						cx="63"
+						cy="56"
+						rx="6"
+						ry="8"
+						stroke="saddlebrown"
+						stroke-width="2"
+						fill="none"
+						id="eye-right"
 					/>
 				</svg>
 			</article>
@@ -150,11 +190,11 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: Word Reveal</h2>
-		<span class="effect-label">Staggered, 0-50% Journey (default)</span>
-		<ScrollTracker>
+		<h2>Word Reveal</h2>
+		<span class="effect-label">Staggered, 20%-50% Journey</span>
+		<ScrollTracker startThreshold={0.2}>
 			<p class="content-box animate-word-reveal">
-				{#each wordsAndSpaces as segment, i}
+				{#each wordsAndSpaces as segment, i (i)}
 					{#if segment.trim().length > 0}
 						<span class="word-block" style="--word-index: {i};">
 							{segment}
@@ -168,24 +208,19 @@
 	</section>
 
 	<section class="demo-section">
-		<h2>Example: Use it programmatically</h2>
+		<h2>Use it programmatically</h2>
 		<span class="effect-label">Trigger at 50% Journey</span>
 		<ScrollTracker startThreshold={0.2} endThreshold={0.8}>
-			{#snippet children(progress)}
-				<article class="content-box">
-					<div style="display: flex">
-						<h4>Progress: {(progress * 100).toFixed()}%</h4>
-						{#if progress > 0.5}
-							<span style="flex-grow: 2"></span>
-							<h4>POOMOJIES!</h4>
-						{/if}
+			{#snippet children(progress: number)}
+				<article class="content-box" style="display: inline-block;">
+					<div style="display: flex; justify-content: space-between; align-items: center;">
+						<h4 style="display: flex;">
+							<span>Progress: {(progress * 100).toFixed()}%</span>{#if progress > 0.5}<span transition:slide={{axis: 'x'}} style="white-space: nowrap">, with POOMOJIES! at 50%</span>{/if}
+						</h4>
 					</div>
-
-					<div>
-						<!-- {#if  progress > 0} -->
+					{#if mountable}
 						<EmojiConfetti trigger={progress > 0.5} />
-						<!-- {/if} -->
-					</div>
+					{/if}
 				</article>
 			{/snippet}
 		</ScrollTracker>
@@ -203,8 +238,8 @@
 		--font-heading: 'IBM Plex Sans', sans-serif;
 		--font-code: 'Source Code Pro', monospace;
 		--color-text: var(--duotone-secondary);
-		--color-primary: white; /* Deep Purple */
-		--color-accent: var(--duotone-secondary); /* Pink accent */
+		--color-primary: var(--duotone-secondary); /* Deep Purple */
+		--color-accent: white; /* Pink accent */
 		--color-bg: var(--duotone-primary);
 		--color-box-bg: var(--duotone-secondary);
 		--color-box-text: var(--duotone-primary);
@@ -227,7 +262,7 @@
 
 	/* --- Page Layout --- */
 	.page-content {
-		padding: 5vh 0 5vh 0; /* Add more bottom padding */
+		padding: 0 0 5vh 0; /* Add more bottom padding */
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -236,24 +271,35 @@
 		overflow-x: hidden;
 	}
 
+	p > code {
+		background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+		color: var(--color-accent);
+		padding: 0.1em 0.4em;
+		border-radius: 4px;
+		font-family: var(--font-code);
+	}
+
 	/* --- Header & Footer --- */
 	.intro-header,
 	.outro-footer {
 		text-align: center;
-		margin-bottom: 10vh;
-		width: 90%;
-		max-width: 800px;
-			text-align: left;
-
+		// margin-bottom: 10vh;
+		// width: 90%;
+		padding: 5vw;
+		// max-width: 800px;
+		max-width: 100%;
+		width: 1000px;
+		text-align: left;
+		box-sizing: border-box;
 
 		h1 {
 			font-family: var(--font-heading);
 			font-weight: 300;
-			font-size: clamp(3rem, 15vw ,8rem);
+			font-size: clamp(3rem, 15vw, 8rem);
 			color: var(--color-primary);
 			margin-bottom: 0.5rem;
 			letter-spacing: -0.07em;
-			line-height: .8em;
+			line-height: 0.8em;
 			code {
 				font-size: inherit; /* Make code same size in heading */
 				color: var(--color-accent);
@@ -264,18 +310,36 @@
 		p {
 			font-size: 1.1rem;
 			color: var(--color-text);
-			margin-bottom: 1.5rem;
+			margin-bottom: 2rem;
+			margin-top: 3rem;
+			line-height: 1.4;
 		}
 
-		nav a {
-			margin: 0 1rem;
-			color: var(--color-primary);
-			text-decoration: none;
-			font-weight: 600;
-			&:hover {
-				text-decoration: underline;
-				color: var(--color-accent);
+		nav {
+			display: flex;
+			gap: 2rem;
+			a {
+				// margin: 0 1rem;
+				color: var(--color-primary);
+				text-decoration: none;
+				font-weight: 600;
+				font-size: 1.2rem;
+
+				&:hover {
+					text-decoration: underline;
+					color: var(--color-accent);
+				}
 			}
+		}
+	}
+
+	.intro-header {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		p {
+			max-width: 360px;
+			font-size: 1.2rem;
 		}
 	}
 	.outro-footer {
@@ -288,34 +352,43 @@
 	}
 
 	.instructions {
-		background-color: var(--color-bg);
-		padding: 1rem 2rem;
-		border-radius: var(--border-radius);
-		margin-bottom: 80vh;
-		border-left: 4px solid var(--color-primary);
+		justify-self: flex-end;
+		align-self: flex-end;
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		// 	background-color: var(--color-bg);
+		// 	padding: 1rem 2rem;
+		// 	// border-radius: var(--border-radius);
+		// 	// margin-bottom: 80vh;
+		// 	// border-left: 4px solid var(--color-primary);
 		p {
 			margin: 0;
-			font-size: 1rem;
+			font-size: 1.2rem;
 		}
 		code {
-			background-color: var(--color-primary);
-			color: var(--color-primary);
-			padding: 0.1em 0.4em;
-			border-radius: 4px;
-			font-family: var(--font-code);
+			display: inline-flex;
+			// 		// background-color: var(--color-primary);
+			// 		// box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 25%, transparent);
+			// 		background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+			// 		color: var(--color-accent);
+			// 		padding: 0.1em 0.4em;
+			// 		border-radius: 4px;
+			// 		font-family: var(--font-code);
 		}
 	}
 
 	.demo-section {
-		margin-bottom: 40vh;
 		max-width: 100%;
 		width: 1000px;
 		padding: 5vw;
 		box-sizing: border-box;
+		min-height: 100vh;
 
 		h2 {
-			font-size: clamp(3rem, 12vw ,6rem);
-			line-height: .8em;
+			font-size: clamp(3rem, 12vw, 6rem);
+			line-height: 0.8em;
 			font-weight: 300;
 			margin-bottom: 2rem;
 			letter-spacing: -0.07em;
@@ -325,8 +398,8 @@
 	/* --- Content Box Styling --- */
 	.content-box {
 		font-size: 1.2rem;
-    line-height: 1.4em;
-	font-weight: 500;
+		line-height: 1.4em;
+		font-weight: 500;
 		box-sizing: border-box;
 		color: var(--color-box-text);
 		border: none; /* Remove border */
@@ -352,7 +425,8 @@
 		:global(.dark) & {
 			--color-box-bg: #111;
 		}
-		h2, h3 {
+		h2,
+		h3 {
 			font-family: var(--font-heading);
 			font-weight: 600;
 			margin-top: 0;
@@ -364,10 +438,13 @@
 			margin-bottom: 1.5rem;
 			// font-size: 1rem;
 			color: var(--duotone-primary);
-			
 
 			&:last-child {
 				margin-bottom: 0;
+			}
+			> code {
+				background-color: color-mix(in srgb, var(--color-box-text) 15%, transparent);
+				color: var(--color-box-text);
 			}
 		}
 
@@ -428,7 +505,7 @@
 	* :global(.animate-scale) {
 		opacity: calc(var(--scroll-progress));
 		transform:
-            /* Scale from 0.9 to 1.0 as progress goes 0 to 1 */ scale(
+			/* Scale from 0.9 to 1.0 as progress goes 0 to 1 */ scale(
 				calc(0.9 + 0.1 * var(--scroll-progress))
 			)
 			/* Translate from 20vh to 0vh as progress goes 0 to 1 */
@@ -450,9 +527,14 @@
 			height: 100%;
 			background-color: tomato;
 			z-index: 1;
-			background-image: linear-gradient(45deg, red, purple);
+			background-image: linear-gradient(
+				45deg,
+				white,
+				var(--duotone-primary) calc((var(--scroll-progress) * 100) * 1%),
+				white calc(80% * (var(--scroll-progress) * 10))
+			);
 			opacity: var(--scroll-progress);
-			    mix-blend-mode: exclusion;
+			mix-blend-mode: difference;
 		}
 
 		// :global(h2),
@@ -507,7 +589,6 @@
 
 	/* 7. Word Reveal (Staggered) */
 	:global(.animate-word-reveal) {
-		/* ... (paragraph base styles remain the same) ... */
 		opacity: 1;
 		transform: scale(1);
 		line-height: 2;
