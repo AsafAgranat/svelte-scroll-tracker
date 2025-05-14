@@ -39,6 +39,7 @@
 		]
 	},
 	"dependencies": {
+		"@vercel/speed-insights": "^1.2.0",
 		"svelte-scroll-tracker": "^1.0.6"
 	}
 }
